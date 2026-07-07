@@ -1,0 +1,26 @@
+SPEC PACK — FULL META PROMPT (GENAI Knowledge Ingestion) — PACKED + CONTRADICTIONS RESOLVED (v8; ADDITIVE)
+
+[All v7 clauses remain. Additions/Modifications below are normative.]
+
+D) LABELING RULES — NO-MATCH BEHAVIOR (MANDATORY)
+- labeling policy MUST specify:
+  - no_match_action: one of [empty_labels, default_label, blocked]
+  - confidence_mode: one of [rule_binary, model_probability]
+- Default baseline (LABELING_MIN_V1):
+  - no_match_action = empty_labels
+  - confidence_mode = rule_binary
+- Semantics:
+  - rule_binary: any matched label is assigned label_confidence=1.0; if no labels produced then label_confidence=null.
+  - model_probability: label_confidence is a probability in [0,1] and must be >= label_confidence_threshold to persist labels.
+- If no_match_action is missing: BLOCKED: labeling_no_match_undefined.
+- If confidence_mode is missing: BLOCKED: labeling_confidence_mode_missing.
+
+E) TAXONOMY VERSION — OUTPUT ALIGNMENT (MANDATORY)
+- taxonomy_version MUST be emitted in every chunk record (string).
+- taxonomy_version value MUST equal the labeling policy taxonomy_version used for that run.
+- If present in labeling preset persist_fields, taxonomy_version MUST be a top-level field in chunk record schema (not extensions).
+
+F) DELETION PROOF RESERVATION — HMAC KEY ORDERING (DOC)
+- If deletion_proof_ref reservation strategy is HMAC-derived:
+  - identifier_policy.hmac_key_reference MUST be set before reservation step.
+  - This is earlier than other HMAC usages; operators must configure the secret reference prior to first run.

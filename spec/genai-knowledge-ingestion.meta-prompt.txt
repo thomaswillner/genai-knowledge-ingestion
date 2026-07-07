@@ -1,0 +1,386 @@
+GENAI Knowledge Ingestion — Canonical Specification (v1.0)
+
+Status
+- This document is the single source of truth for the product specification.
+- It replaces the additive “vN clauses remain” chain for runtime behavior. The former additive text is preserved under:
+  - /spec/history/patches/v0.x/meta-prompt.v18.additive.txt
+
+Scope of product
+- Ingest technical cybersecurity knowledge (architecture docs, runbooks, code, processes, best practices) from controlled sources.
+- Produce GenAI-ready artifacts:
+  - strict schema-valid JSONL chunk records + per-document manifests
+- Enforce fail-closed compliance:
+  - PII detection/redaction
+  - secret detection/block
+  - scope gate (technical-only)
+  - quality gate
+  - deletion of raw artifacts with deletion proof
+- Preserve access control and provenance:
+  - ACL references propagated end-to-end
+  - auditable ledgers and hashes
+
+Non-goals
+- No uncontrolled web crawling.
+- No ingestion of non-technical business content (marketing/sales/HR/legal/finance).
+- No storage of raw personal data beyond the minimal permitted transient window required to sanitize and publish.
+
+================================================================================
+1) Execution Contract (Normative; Deterministic)
+================================================================================
+The pipeline MUST execute in the following order for each run_id:
+
+1. INPUT-RESOLVE
+2. PRE-FLIGHT GATES
+3. RETRIEVAL (deterministic connectors)
+4. SNAPSHOT + HASHING
+5. OFFLINE EXTRACTION (Tika)
+6. NORMALIZATION
+7. SENSITIVE DATA VERIFICATION (3 passes)
+8. SCOPE GATE (deterministic classifier)
+9. LABELING (deterministic; rule-based baseline + optional label_quality)
+10. QUALITY SCORING (deterministic rubric)
+11. CHUNKING (deterministic algorithm)
+12. SERIALIZE OUTPUTS (strict schemas)
+13. POST-EXPORT SCAN (third sensitive pass)
+14. PUBLISH (sanitized store + index)
+15. RAW DELETION (materialize deletion proof)
+16. LEDGERS + CATALOG + AUDIT SUMMARY
+If any step cannot meet its contract: BLOCKED with explicit code. No partial silent success.
+
+================================================================================
+2) Pre-Flight Gates (Fail-Closed)
+================================================================================
+2.1 TIKA_HEALTH_GATE
+- The parsing layer MUST be available before any retrieval proceeds.
+- If unavailable: BLOCKED: tika_unavailable.
+
+2.2 CONFIG_VALIDATION_GATE
+- All required config keys must be non-null before run, except keys explicitly marked “optional”.
+- If invalid/missing required key: BLOCKED: config_invalid.
+
+2.3 LEGAL_BASIS_GATE (Vendor portals)
+- Vendor portal ingestion requires a legal_basis_record_id per portal domain.
+- If missing: BLOCKED: legal_basis_missing.
+
+2.4 RETENTION_EXCEPTION_GATE (EU)
+- If jurisdiction includes EU and raw_artifacts_retention_seconds > 0:
+  - retention_exception_legal_basis_record_id MUST be provided.
+- Else: BLOCKED: retention_exception_missing.
+
+================================================================================
+3) Retrieval: Deterministic Playwright-Only Portal Strategy (Normative)
+================================================================================
+3.1 Domain allowlist gating
+- Retrieval is allowed only for domains listed in web_portal_policy.domain_allowlist.
+- Any off-allowlist domain: BLOCKED: domain_not_allowed.
+
+3.2 Deterministic discovery
+- Use vendor portal profiles (login_url/base_url + discovery_endpoints + candidate_filters).
+- No “wild” crawling. Only:
+  - enumerated endpoints OR
+  - portal search-first (if configured) followed by deterministic extraction of result URLs.
+
+3.3 Snapshot hashing
+- For each retrieved HTML page and each downloaded binary:
+  - compute snapshot_hash = SHA-256(bytes)
+  - store snapshot_hash and retrieval metadata (URL, HTTP status, timestamp UTC)
+- Snapshot hashes are written to the audit ledger.
+
+3.4 Throttle/retry
+- Enforce max_rps and retry_cap from policy.
+- On 403/429: stop and mark URL health cooldown; BLOCKED: portal_rate_limited.
+
+3.5 MFA manual handoff
+- If portal requires manual_step_required:
+  - run in headed mode; operator completes MFA
+  - capture storageState to session_artifact_store (encrypted) with TTL
+  - delete session artifact after TTL
+- If handoff times out: BLOCKED: mfa_handoff_timeout.
+
+================================================================================
+4) Parsing & Extraction (Normative)
+================================================================================
+4.1 Allowed parsing stack (minimal)
+- Primary: Apache Tika Server for PDF/DOCX/PPTX/XLSX/HTML.
+- Archive extraction must obey archive_policy bounds (zip/rar) and must block on violations:
+  - BLOCKED: archive_policy_violation.
+
+4.2 Offline extraction requirement
+- Extraction MUST run on downloaded artifacts, not on live browser content.
+
+================================================================================
+5) Sensitive Data Verification (Normative; 3-pass)
+================================================================================
+5.1 Detectors (concrete)
+- Primary PII: Presidio (presidio_http) using detector config file:
+  - /spec/policies/detectors/presidio.PRESIDIO_EU_PII_V1.json
+- Secondary secrets: Gitleaks (gitleaks_cli) using detector config file:
+  - /spec/policies/detectors/gitleaks.GITLEAKS_SECRETS_V1.json
+- Detector config file hashes MUST be recorded in:
+  - chunk records and manifests
+
+5.2 Null means “must configure before run”
+- If presidio analyzer_service_url or anonymizer_service_url is null: BLOCKED: presidio_endpoint_missing.
+- If gitleaks exec_mode=native and gitleaks_path is null: BLOCKED: gitleaks_path_missing.
+- If gitleaks exec_mode=docker and gitleaks_image is null: BLOCKED: gitleaks_image_missing.
+
+5.3 Three enforcement points (fail-closed)
+- Pass 1: pre-persist scan (after extraction, before any persist)
+- Pass 2: derived-fields scan (after deriving title/summary/labels, before persist)
+- Pass 3: post-export scan (after serialization, before publish)
+If any pass finds unremediated sensitive content: BLOCKED: sensitive_data_violation.
+
+================================================================================
+6) Scope Gate (Normative; Deterministic)
+================================================================================
+The scope gate MUST use the deterministic classifier_v1 defined in:
+- /spec/policies/presets/scope.CYBERSEC_TECH_ONLY_V1.json (classifier_v1)
+
+Decision logic (fix for v18 defect)
+- OUT_OF_SCOPE decisions triggered by deny_total >= deny_threshold MUST NOT be overridden by scope_confidence_threshold.
+- The confidence threshold applies only to IN_SCOPE decisions. If IN_SCOPE confidence < threshold: BLOCKED: scope_gate_low_confidence.
+
+Conformance gate (mandatory)
+- The harness must implement and prove the classifier_v1 outcomes using tests/fixtures/scope_*.txt.
+- If missing/failing: BLOCKED: scope_conformance_test_failed.
+
+================================================================================
+7) Labeling (Normative; Deterministic)
+================================================================================
+- Labeling is mandatory. No disable mode.
+- no_match_action and confidence_mode must be present; else:
+  - BLOCKED: labeling_no_match_undefined
+  - BLOCKED: labeling_confidence_mode_missing
+- taxonomy_version must be emitted in every chunk record.
+
+label_quality
+- If label_quality object is present (LABELING_MIN_V2), implement exactly per LABELING QUALITY CONTROLS.
+- Conformance suite required (no-match, cap, tie-break) + base case:
+  - BLOCKED: labeling_conformance_suite_incomplete
+  - BLOCKED: labeling_conformance_test_failed
+
+================================================================================
+8) Quality Scoring (Normative; Deterministic)
+================================================================================
+- Use scoring_rubric_v1 from quality preset and enforce min_quality_score.
+- If score < threshold: BLOCKED: data_quality_gate.
+- Conformance tests required: BLOCKED: quality_conformance_test_failed.
+
+================================================================================
+9) Chunking (Normative; Deterministic)
+================================================================================
+Chunking MUST be deterministic and parameterized by chunking_policy.
+
+Baseline algorithm (structure-aware token chunking)
+- Input: extracted_text plus optional section_path/headings.
+- Tokenizer: cl100k_base tokenization (tiktoken) is REQUIRED for deterministic token_count and boundary behavior.
+  - If tokenizer unavailable: BLOCKED: tokenizer_unavailable.
+- Steps:
+  1) Build an ordered list of text blocks:
+     - title (if present), then headings blocks (if present), then body.
+  2) Normalize whitespace (collapse sequences to single spaces).
+  3) Walk blocks in order and create chunks of chunk_size_tokens with overlap chunk_overlap_tokens.
+  4) Boundary preference:
+     - prefer newline boundaries, then sentence boundaries, then whitespace.
+  5) Ensure each chunk token length is between min_chunk_tokens and max_chunk_tokens_hard_cap, otherwise adjust boundary within the same deterministic rules.
+
+Chunking conformance (recommended)
+- Add unit tests proving chunk counts and deterministic boundaries on fixtures. If not implemented, do not claim conformance.
+
+================================================================================
+10) Output Serialization (Strict Schemas)
+================================================================================
+- Chunk records MUST validate against:
+  - /spec/schemas/gki.chunk-record.schema.json
+- Manifests MUST validate against:
+  - /spec/schemas/gki.manifest.schema.json
+- Unknown top-level fields are forbidden outside extensions:
+  - BLOCKED: schema_unknown_field
+- Missing required fields:
+  - BLOCKED: schema_missing_required_field
+
+================================================================================
+11) Raw Deletion + Deletion Proof (Normative)
+================================================================================
+- deletion_proof_ref must be present in chunk records.
+- Reservation+materialization model:
+  - Reserve deletion_proof_ref before chunk serialization.
+  - After raw deletion, materialize proof object under reserved ref.
+If reservation missing: BLOCKED: deletion_proof_ref_not_reserved.
+
+================================================================================
+12) Ledgers, Catalog, Audit Summary (Normative)
+================================================================================
+- Success ledger: destination + objects published + counts.
+- Failure ledger: reason codes + destinations attempted.
+- Catalog entries per document: lineage + policy fingerprints + detector config hashes.
+
+================================================================================
+13) Verification Gates (Mandatory for DONE)
+================================================================================
+The one-command test harness MUST include:
+- Schema validation for fixtures.
+- Labeling conformance suite.
+- Scope conformance suite.
+- Quality conformance suite.
+- Sensitive-data gates (at least dry-run invocation with configured detectors).
+If any missing: BLOCKED: done_gate_failed.
+
+
+================================================================================
+APPENDIX A) Normative Algorithms (Restored; Self-Contained)
+================================================================================
+
+LABELING QUALITY CONTROLS (NORMATIVE; DETERMINISTIC)
+- If the active labeling policy contains a "label_quality" object, the labeling implementation MUST apply it deterministically.
+- Supported keys (all optional; defaults are policy-defined):
+  - dedupe (boolean): if true, the same label is emitted at most once per label_type.
+  - min_occurrences (integer >= 1): a label is emitted only if total occurrences across evaluated sections >= min_occurrences.
+  - max_labels_per_type (integer >= 1): after scoring, keep only the top N labels per label_type.
+  - section_weighting (object): weights for ["title","headings","body"] as positive integers. Missing keys default to 1.
+  - primary_label_strategy (string): "highest_score_per_type" only.
+  - emit_primary_labels_to_extensions (boolean): if true, emit primary labels under chunk.extensions.<extensions_key>.primary_labels.
+  - extensions_key (string): default "labeling".
+
+Scoring algorithm (mandatory when label_quality is present)
+1) Text segmentation (deterministic):
+   - title_text: the document title string (if available; else empty string).
+   - headings_text: concatenation of extracted headings (if available; else empty string).
+   - body_text: extracted_text.
+2) Normalization:
+   - For scoring, each section is normalized as: lowercase + collapse whitespace to single spaces.
+3) Term matching:
+   - For each rule entry (label_type -> list of rules), each rule contains match_any terms and a target label.
+   - For each match_any term, count non-overlapping substring occurrences in each section (title/headings/body) after normalization.
+   - Section score contribution = occurrences_in_section * section_weighting[section].
+   - Label score = sum of contributions across all terms mapped to that label.
+4) Thresholding:
+   - Raw occurrence filter (mandatory):
+     - Compute raw_total_occurrences as the unweighted total occurrences across sections.
+     - If raw_total_occurrences < min_occurrences: do not emit the label (stop evaluating it).
+   - Weighted scoring phase:
+     - Only labels that pass the raw occurrence filter enter weighted scoring and ranking.
+5) Selection:
+   - Sort candidate labels by (score desc, label lexicographic asc) and keep up to max_labels_per_type.
+6) Primary labels:
+   - primary_label_strategy = highest_score_per_type selects the top label after sorting per label_type.
+   - If emit_primary_labels_to_extensions=true, output:
+     chunk.extensions.<extensions_key>.primary_labels = { "<label_type>": "<label>" }
+     chunk.extensions.<extensions_key>.label_scores = { "<label_type>": { "<label>": <score> } } (optional but deterministic if emitted)
+
+Outputs (mandatory)
+- labels array MUST include the emitted labels (across all label_types) after quality controls.
+- label_confidence behavior MUST follow confidence_mode:
+  - rule_binary: if labels non-empty => 1.0; else null.
+  - model_probability: probability in [0,1], filtered by label_confidence_threshold.
+
+LABELING CONFORMANCE TEST GATE (MANDATORY FOR VERIFY/DONE)
+- The one-command test harness MUST include automated conformance tests that prove the labeling implementation matches:
+  - LABELING_MIN_V2 label_quality semantics
+  - min_occurrences raw-count filtering semantics
+  - section_weighting scoring semantics
+  - primary label selection + deterministic tie-breaking
+- Minimum required conformance case:
+  - Input: tests/fixtures/synthetic_iam_runbook.txt
+  - Policy: LABELING_MIN_V2
+  - Expected: labels include "IAM" and extensions.labeling.primary_labels.domain_tags == "IAM" (rule_binary -> label_confidence=1.0 when labels non-empty)
+- If conformance tests are missing or failing: BLOCKED: labeling_conformance_test_failed.
+
+LABELING CONFORMANCE TEST EXTENSION (MANDATORY)
+- Extend labeling conformance beyond a single case:
+  - No-match path: a fixture with no matching terms MUST produce labels=[] and label_confidence=null (no_match_action=empty_labels).
+  - Cap path: a fixture that matches >=3 domain tags MUST cap to max_labels_per_type=2 and emit primary labels deterministically.
+  - Tie-break path: a fixture engineered to yield equal scores MUST select lexicographically smallest label.
+- If extended conformance suite is missing: BLOCKED: labeling_conformance_suite_incomplete.
+
+SCOPE CLASSIFIER (NORMATIVE; DETERMINISTIC)
+- The scope gate MUST use a deterministic, auditable classifier for allowlist_taxonomy vs denylist_taxonomy.
+- No probabilistic-only or opaque classification is allowed by default. Optional model usage must be explainable and logged, but the baseline MUST be rule-based.
+
+Inputs
+- scope_policy.allowlist_taxonomy (list of allowed scope classes)
+- scope_policy.denylist_taxonomy (list of denied scope classes)
+- scope_policy.scope_confidence_threshold (0..1)
+- scope_policy must provide classifier parameters under scope_policy.classifier_v1 (mandatory for v16+).
+
+Deterministic algorithm (classifier_v1)
+1) Text segmentation (deterministic):
+   - title_text: document title if available else "".
+   - headings_text: concatenated headings if available else "".
+   - body_text: extracted_text.
+2) Normalization:
+   - lowercase; collapse whitespace; preserve ASCII letters/digits and standard punctuation.
+3) Term dictionaries:
+   - allow_terms: mapping {scope_class: [terms]} and deny_terms: mapping {deny_class: [terms]}.
+   - Each term is counted as non-overlapping substring occurrences in each section.
+4) Scoring:
+   - weights: section_weighting = {"title":W_t, "headings":W_h, "body":W_b} (positive integers).
+   - allow_score(scope_class) = Σ(occurrences(term,section)*weight(section)) across its terms and sections.
+   - deny_score(deny_class) = Σ(occurrences(term,section)*weight(section)) across its terms and sections.
+   - allow_total = max allow_score across allow_classes (0 if none).
+   - deny_total  = max deny_score across deny_classes (0 if none).
+5) Decision (fail-closed):
+   - If deny_total >= deny_threshold: OUT_OF_SCOPE (drop) with reason="deny_threshold_met".
+   - Else if allow_total >= allow_threshold AND (allow_total - deny_total) >= allow_margin: IN_SCOPE.
+   - Else: BLOCKED: scope_gate_low_confidence (do not persist).
+6) scope_class selection:
+   - scope_class = argmax allow_score; tie-break: (score desc, class lexicographic asc).
+7) scope_confidence (0..1):
+   - Note: confidence threshold applies ONLY to IN_SCOPE decisions; OUT_OF_SCOPE decisions are final.
+   - confidence = min(1.0, max(0.0, (allow_total - deny_total) / confidence_divisor))
+   - If decision == IN_SCOPE and confidence < scope_confidence_threshold => BLOCKED: scope_gate_low_confidence.
+8) Audit outputs (mandatory):
+   - chunk.scope_class, chunk.scope_confidence, chunk.scope_policy_fingerprint.
+   - chunk.extensions.scope = {
+       "allow_top_class": <scope_class>,
+       "allow_top_score": <allow_total>,
+       "deny_top_class": <deny_class_or_null>,
+       "deny_top_score": <deny_total>,
+       "decision": "IN_SCOPE"|"OUT_OF_SCOPE"|"BLOCKED",
+       "classifier_version": "classifier_v1"
+     }
+
+SCOPE CONFORMANCE TEST GATE (MANDATORY FOR VERIFY/DONE)
+- The one-command test harness MUST include automated conformance tests proving the scope classifier matches classifier_v1.
+- Minimum conformance cases (fixtures):
+  - tests/fixtures/scope_in_scope_iam.txt => IN_SCOPE and scope_class in allowlist (expected: "runbook" or "architecture" depending on rules).
+  - tests/fixtures/scope_out_of_scope_marketing.txt => OUT_OF_SCOPE (deny_threshold_met).
+  - tests/fixtures/scope_ambiguous_mixed.txt => BLOCKED: scope_gate_low_confidence (fail-closed).
+- If conformance tests are missing or failing: BLOCKED: scope_conformance_test_failed.
+
+QUALITY SCORE (NORMATIVE; DETERMINISTIC)
+- The quality gate MUST compute a deterministic quality_score in [0,1] and quality_flags[].
+- Baseline quality scoring MUST be rule-based. Optional model-based quality is out-of-scope unless explicitly enabled by policy and logged.
+
+Inputs (quality.QUALITY_MIN_V1 extended)
+- min_quality_score (0..1)
+- max_duplicate_ratio (0..1)
+- max_missing_metadata_ratio (0..1)
+- schema_validation_required (bool)
+- quality_policy must provide scoring parameters under quality_policy.scoring_rubric_v1 (mandatory for v16+).
+
+Deterministic scoring rubric (scoring_rubric_v1)
+1) Start score = 1.0
+2) Mandatory checks (set flags and apply penalties):
+   - EMPTY_TEXT: if extracted_text normalized length == 0 => score = 0.0; flags += ["EMPTY_TEXT"] (hard fail).
+   - TOO_SHORT: if token_count < min_tokens => score -= p_too_short; flags += ["TOO_SHORT"].
+   - MISSING_TITLE: if title missing/null => score -= p_missing_title; flags += ["MISSING_TITLE"].
+   - MISSING_SUMMARY: if summary missing/null => score -= p_missing_summary; flags += ["MISSING_SUMMARY"].
+   - PARSE_WARNING: if parse_warnings_present => score -= p_parse_warning; flags += ["PARSE_WARNING"].
+3) Duplicate ratio (document-level, deterministic):
+   - duplicate_ratio = duplicates / max(1,total_chunks) where duplicates are chunks with identical content_hash within doc.
+   - If duplicate_ratio > max_duplicate_ratio => score -= p_duplicate_ratio; flags += ["DUPLICATE_RATIO_HIGH"].
+4) Missing metadata ratio (document-level, deterministic):
+   - missing_metadata_fields_count over [title, summary, content_type, section_path] per chunk.
+   - missing_metadata_ratio = missing / max(1, expected_fields_count).
+   - If missing_metadata_ratio > max_missing_metadata_ratio => score -= p_missing_metadata_ratio; flags += ["MISSING_METADATA_HIGH"].
+5) Clamp score to [0,1].
+6) Gate:
+   - If score < min_quality_score => BLOCKED: data_quality_gate.
+
+QUALITY CONFORMANCE TEST GATE (MANDATORY FOR VERIFY/DONE)
+- The one-command test harness MUST include automated conformance tests proving the quality scoring matches scoring_rubric_v1.
+- Minimum conformance cases (fixtures):
+  - tests/fixtures/quality_good.txt => score >= min_quality_score; flags exclude EMPTY_TEXT.
+  - tests/fixtures/quality_empty.txt => score == 0.0; flags include EMPTY_TEXT.
+- If conformance tests are missing or failing: BLOCKED: quality_conformance_test_failed.

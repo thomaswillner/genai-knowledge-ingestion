@@ -1,0 +1,102 @@
+BUILDER PROMPT (OpenAI Codex / OpenAI Agents SDK / Claude Coding Agents) — PACKED FOR HIGH BUILD SUCCESS (v21)
+
+Insert this as the agent’s top-level instruction. Keep the full SPEC PACK in the repo as versioned files.
+
+0) PROMPT PACKAGING POLICY (MANDATORY)
+
+- SPEC STATUS: Consolidation completed. Canonical spec is authoritative: /spec/genai-knowledge-ingestion.meta-prompt.txt (v1.0).
+- This Builder Prompt is the only “live” prompt for the coding agent.
+- The detailed specification lives in the repo as versioned artifacts:
+  - /spec/genai-knowledge-ingestion.meta-prompt.txt (Canonical v1.0)
+  - /spec/schemas/*.schema.json                         (STRICT schemas; additionalProperties=false; "extensions" object is required)
+  - /spec/policies/*.json                               (scope, retention, sensitive-data, quality, labeling, portals, config, presets, detectors)
+  - /config/starter-config.json
+- HARD RULE (NO SPEC REPRINT):
+  - Never re-print /spec/* in chat output. Reference by file path + heading/ID only.
+- LARGE OUTPUT RULE (ARTIFACT-FIRST):
+  - If any generated text exceeds harness/tool-output limits: write artifact file; output only path+hash+summary.
+- SCHEMA NOTE (NON-NEGOTIABLE):
+  - Always emit "extensions": {} even when empty. Omitting it fails schema validation.
+
+1) EXECUTION CONTRACT (FIXED ORDER; NO DEVIATIONS)
+A. INPUT-RESOLVE
+   - Apply Input Severity Model.
+   - Load /config/starter-config.json; apply preset IDs.
+   - Resolve detector configs by ruleset_id from /spec/policies/detectors/* and compute their file hashes.
+   - Resolve labeling policy (mandatory) and compute labeling_policy_fingerprint.
+B. REPO DISCOVERY
+C. SCAFFOLD
+   - Wire STRICT schema validation for:
+     - chunk records => /spec/schemas/gki.chunk-record.schema.json
+     - manifests     => /spec/schemas/gki.manifest.schema.json
+D. IMPLEMENT
+   - PRE-FLIGHT: TIKA_HEALTH_GATE, CONFIG_VALIDATION_GATE, LEGAL_BASIS_GATE, RETENTION_EXCEPTION_GATE
+   - DELETION PROOF REF RESERVATION:
+     - Reserve deletion_proof_ref IDs BEFORE chunk records are first serialized.
+     - If using HMAC-derived reservation IDs, ensure identifier_policy.hmac_key_reference is set BEFORE reservation.
+     - After deletion executes, create the deletion proof object under that reserved ref.
+   - Labeling (mandatory; deterministic rule-based baseline):
+
+   - Labeling quality controls (deterministic):
+     - If the active labeling policy contains a "label_quality" object (e.g., LABELING_MIN_V2), implement it exactly as defined in /spec/genai-knowledge-ingestion.meta-prompt.txt (Canonical v1.0) under "LABELING QUALITY CONTROLS (NORMATIVE; DETERMINISTIC)".
+     - Apply labeling preset LABELING_MIN_V1 (unless overridden).
+     - Enforce explicit no_match_action and confidence_mode from labeling policy.
+     - Always output taxonomy_version (required by chunk schema) from labeling policy.
+   - Sensitive-data:
+     - Presidio (PII) + Gitleaks (secrets) and record detector config hashes into required fields.
+   - Gitleaks exec_mode gate:
+     - native ⇒ require gitleaks_path else BLOCKED: gitleaks_path_missing
+     - docker ⇒ require gitleaks_image else BLOCKED: gitleaks_image_missing
+   - Ensure outputs contain required policy fingerprints and quality fields per schemas.
+   - Use "extensions" object for any extra metadata; no other unknown top-level fields allowed.
+E. VERIFY
+   - Labeling conformance tests (mandatory):
+     - Add golden tests that prove the implementation matches the spec for LABELING_MIN_V2 using tests/fixtures/synthetic_iam_runbook.txt (see docs/VERIFICATION-NOTE-LABELING.md).
+   - Scope conformance tests (mandatory):
+     - Add golden tests for classifier_v1 using tests/fixtures/scope_*.txt (see spec SCOPE CONFORMANCE TEST GATE).
+   - Quality conformance tests (mandatory):
+     - Add golden tests for scoring_rubric_v1 using tests/fixtures/quality_*.txt (see spec QUALITY CONFORMANCE TEST GATE).
+   - Labeling conformance suite (mandatory):
+     - Add no-match, cap, and tie-break cases (see spec LABELING CONFORMANCE TEST EXTENSION).
+
+F. PACKAGE
+G. DONE GATE REPORT
+
+2) INPUT SEVERITY MODEL
+2.1 HARD-BLOCKERS (missing/invalid ⇒ BLOCKED)
+- All hard blockers defined in the canonical spec remain.
+- Labeling policy is mandatory. If labeling policy is not resolvable: BLOCKED: labeling_policy_missing.
+- If labeling policy no_match_action is missing: BLOCKED: labeling_no_match_undefined.
+- If labeling policy confidence_mode is missing: BLOCKED: labeling_confidence_mode_missing.
+- taxonomy_version is required by strict chunk schema. If missing: BLOCKED: schema_missing_required_field.
+- deletion_proof_ref reservation must be implemented: if chunk serialization occurs without reserved deletion_proof_ref: BLOCKED: deletion_proof_ref_not_reserved.
+- STRICT schema conformance is mandatory for VERIFY; schema failures block DONE.
+
+
+
+2.2 SAFE-DEFAULTS
+- MCP is optional; do not BLOCK if unavailable.
+- If an input is not a hard-blocker, use the spec-defined safe defaults and log the choice.
+- Artifact-first output discipline remains mandatory.
+
+2.3 Additional explicit BLOCKED codes (non-exhaustive; canonical spec is authoritative)
+- BLOCKED: scope_conformance_test_failed
+- BLOCKED: quality_conformance_test_failed
+- BLOCKED: labeling_conformance_suite_incomplete
+- BLOCKED: labeling_conformance_test_failed
+- BLOCKED: spec_missing_requirement
+
+3) PROVIDER EXECUTION RULES (Agentic Build Discipline)
+- CLAUDE.md and AGENTS.md are entrypoints; they MUST reference prompt-1-builder.txt and the canonical spec.
+- The agent must treat the canonical spec as authoritative; no inference from missing documents is allowed.
+- If any referenced requirement is not present in the repo: BLOCKED: spec_missing_requirement.
+- Prefer artifact-file outputs over chat dumps (artifact-first rule).
+
+4) DEFINITION OF DONE (FAIL-CLOSED)
+DONE == all true:
+- All DONE gates defined in the canonical spec remain.
+- Labeling no-match behavior is deterministic and documented (empty_labels vs default_label).
+- If no_match_action is missing at runtime: BLOCKED: labeling_no_match_undefined.
+- If confidence_mode is missing at runtime: BLOCKED: labeling_confidence_mode_missing.
+- taxonomy_version is present in all chunk records and equals labeling policy taxonomy_version.
+If any fails: “BLOCKED: done_gate_failed:<reason>”.

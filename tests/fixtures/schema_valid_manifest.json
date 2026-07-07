@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "doc_id": "doc-1",
+  "dataset_id": "ds-1",
+  "dataset_version": "v1",
+  "index_version": "iv1",
+  "source_id": "ManualImport",
+  "source_object_ref_hash": "hash1",
+  "object_version": "ov1",
+  "counts": {
+    "chunks": 1
+  },
+  "hashes": {
+    "content_hash": "chash"
+  },
+  "acl_ref": "acl-1",
+  "scope_policy_fingerprint": "scopefp",
+  "labeling_policy_fingerprint": "labelfp",
+  "data_quality_policy_fingerprint": "qualfp",
+  "chunking_policy_fingerprint": "chunkfp",
+  "catalog_entry_ref": "catalog-1",
+  "quality_report_ref": "qrep-1",
+  "run_stamps": {
+    "run_id": "run-1",
+    "extraction_timestamp_utc": "2026-02-21T00:00:00Z",
+    "config_version": "cv1",
+    "config_hash": "cfg1"
+  },
+  "primary_detector_ruleset_id": "PRESIDIO_EU_PII_V1",
+  "primary_detector_config_hash": "pdh",
+  "secondary_detector_ruleset_id": "GITLEAKS_SECRETS_V1",
+  "secondary_detector_config_hash": "sdh",
+  "scan_summaries": {},
+  "deletion_proofs_summary": {},
+  "extensions": {}
+}

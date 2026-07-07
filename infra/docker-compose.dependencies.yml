@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  tika:
+    image: apache/tika:latest
+    container_name: gki-tika
+    ports:
+      - "9998:9998"
+    # For strict health requirements (/status), start tika with -status:
+    # command: ["-status"]
+    # NOTE: If -status is not used, the pack's tika.status_endpoint_policy should be "preferred" or "probe_only".
+
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio/presidio-analyzer:latest
+    container_name: gki-presidio-analyzer
+    ports:
+      - "5002:3000"    # Presidio services can require language models (spaCy). For production, build a custom image with required models.
+
+  presidio-anonymizer:
+    image: mcr.microsoft.com/presidio/presidio-anonymizer:latest
+    container_name: gki-presidio-anonymizer
+    ports:
+      - "5001:3000"
+# Gitleaks is typically run as a CLI (native binary) or via docker image zricethezav/gitleaks.
+# It is not required as a long-running service in docker-compose.

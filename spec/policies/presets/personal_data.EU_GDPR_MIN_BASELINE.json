@@ -1,0 +1,8 @@
+{
+  "id": "EU_GDPR_MIN_BASELINE",
+  "detection_strictness": "high",
+  "removal_mode": "drop",
+  "allowlist_taxonomy": [
+    "technical_cybersecurity_only"
+  ]
+}

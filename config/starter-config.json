@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "profile_name": "EU_GDPR_MIN_BASELINE",
+  "agent_provider": "claude_messages_api",
+  "model_id": null,
+  "tool_calling_enabled": true,
+  "compaction_enabled": true,
+  "jurisdictions": [
+    "EU"
+  ],
+  "presets": {
+    "preset_retention_policy_id": "EU_GDPR_MIN_BASELINE",
+    "preset_personal_data_policy_id": "EU_GDPR_MIN_BASELINE",
+    "preset_sensitive_data_policy_id": "EU_GDPR_MIN_BASELINE",
+    "preset_scope_policy_id": "CYBERSEC_TECH_ONLY_V1",
+    "preset_identifier_policy_id": "HASH_ONLY_V1",
+    "preset_labeling_policy_id": "LABELING_MIN_V2",
+    "preset_data_quality_policy_id": "QUALITY_MIN_V1",
+    "preset_data_catalog_policy_id": "CATALOG_MIN_V1",
+    "preset_dataset_versioning_policy_id": "DATASET_VERSIONING_V1",
+    "preset_chunking_policy_id": "CHUNKING_BASELINE_V1"
+  },
+  "tika": {
+    "tika_url": "http://127.0.0.1:9998",
+    "status_endpoint_policy": "preferred"
+  }
+}

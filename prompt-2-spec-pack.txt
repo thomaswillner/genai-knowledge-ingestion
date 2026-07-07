@@ -1,0 +1,9 @@
+SPEC PACK POINTER (non-authoritative)
+
+This file is retained only for backward compatibility.
+
+Authoritative specification:
+- spec/genai-knowledge-ingestion.meta-prompt.txt (Canonical Specification v1.0)
+
+Historical additive spec chain:
+- spec/history/patches/v0.x/meta-prompt.v18.additive.txt

@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gki:schema:chunk-record:v1",
+  "title": "GKI Canonical Chunk Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "doc_id",
+    "dataset_id",
+    "dataset_version",
+    "index_version",
+    "source_id",
+    "source_object_ref_hash",
+    "object_version",
+    "section_path",
+    "chunk_index",
+    "chunk_id",
+    "content_hash",
+    "extracted_text",
+    "token_count",
+    "acl_ref",
+    "provenance_ref",
+    "scope_class",
+    "scope_confidence",
+    "scope_policy_fingerprint",
+    "labels",
+    "label_confidence",
+    "labeling_policy_fingerprint",
+    "taxonomy_version",
+    "quality_score",
+    "quality_flags",
+    "data_quality_policy_fingerprint",
+    "sensitive_data_status",
+    "sensitive_data_scan_summary_ref",
+    "primary_detector_ruleset_id",
+    "primary_detector_config_hash",
+    "secondary_detector_ruleset_id",
+    "secondary_detector_config_hash",
+    "deletion_proof_ref",
+    "sanitized_destination_uri",
+    "index_destination",
+    "chunking_policy_fingerprint",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "doc_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dataset_id": {
+      "type": "string"
+    },
+    "dataset_version": {
+      "type": "string"
+    },
+    "index_version": {
+      "type": "string"
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "source_object_ref_hash": {
+      "type": "string"
+    },
+    "object_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "section_path": {
+      "type": "string"
+    },
+    "chunk_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "chunk_id": {
+      "type": "string"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "extracted_text": {
+      "type": "string"
+    },
+    "token_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "acl_ref": {
+      "type": "string"
+    },
+    "provenance_ref": {
+      "type": "string"
+    },
+    "scope_class": {
+      "type": "string"
+    },
+    "scope_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "scope_policy_fingerprint": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "label_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "labeling_policy_fingerprint": {
+      "type": "string"
+    },
+    "taxonomy_version": {
+      "type": "string"
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "quality_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_quality_policy_fingerprint": {
+      "type": "string"
+    },
+    "sensitive_data_status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "blocked",
+        "redacted",
+        "quarantined",
+        "not_run"
+      ]
+    },
+    "sensitive_data_scan_summary_ref": {
+      "type": "string"
+    },
+    "primary_detector_ruleset_id": {
+      "type": "string"
+    },
+    "primary_detector_config_hash": {
+      "type": "string"
+    },
+    "secondary_detector_ruleset_id": {
+      "type": "string"
+    },
+    "secondary_detector_config_hash": {
+      "type": "string"
+    },
+    "deletion_proof_ref": {
+      "type": "string"
+    },
+    "sanitized_destination_uri": {
+      "type": "string"
+    },
+    "index_destination": {
+      "type": "string"
+    },
+    "chunking_policy_fingerprint": {
+      "type": "string"
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

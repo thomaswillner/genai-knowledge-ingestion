@@ -1,0 +1,11 @@
+{
+  "id": "HASH_ONLY_V1",
+  "hashing_algorithm": "sha256",
+  "hmac_key_reference": null,
+  "output_identifiers_allowed": [
+    "object_ref_hash",
+    "path_ref_hash"
+  ],
+  "raw_identifier_persistence_forbidden_in_outputs": true,
+  "restricted_audit_raw_identifier_enabled": false
+}

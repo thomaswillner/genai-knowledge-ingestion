@@ -1,0 +1,5 @@
+TITLE: IAM/PAM Runbook - Access Provisioning Procedure
+
+This runbook describes the standard operating procedure to onboard privileged accounts.
+It includes configuration steps for Entra Conditional Access and CyberArk PSM.
+Architecture references and design notes are included.

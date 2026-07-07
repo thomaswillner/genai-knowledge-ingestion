@@ -1,0 +1,7 @@
+TITLE: Client Engagement Note
+
+This note summarizes a client engagement and outlines a high-level design approach.
+It references one internal procedure used during delivery.
+
+The document is intentionally brief and generic.
+It contains limited technical indicators and should fail-closed (BLOCKED) when thresholds and margins are not met.

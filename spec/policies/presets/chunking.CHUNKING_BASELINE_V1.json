@@ -1,0 +1,11 @@
+{
+  "id": "CHUNKING_BASELINE_V1",
+  "segmentation_mode": "token_based_with_structure",
+  "chunk_size_tokens": 512,
+  "chunk_overlap_tokens": 50,
+  "min_chunk_tokens": 100,
+  "max_chunk_tokens_hard_cap": 1024,
+  "store_offsets": true,
+  "store_section_path": true,
+  "store_chunking_policy_fingerprint": true
+}

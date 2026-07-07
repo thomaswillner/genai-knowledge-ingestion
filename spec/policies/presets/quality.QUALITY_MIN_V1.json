@@ -1,0 +1,16 @@
+{
+  "id": "QUALITY_MIN_V1",
+  "min_quality_score": 0.6,
+  "max_duplicate_ratio": 0.2,
+  "max_missing_metadata_ratio": 0.2,
+  "schema_validation_required": true,
+  "scoring_rubric_v1": {
+    "min_tokens": 80,
+    "p_too_short": 0.25,
+    "p_missing_title": 0.05,
+    "p_missing_summary": 0.05,
+    "p_parse_warning": 0.1,
+    "p_duplicate_ratio": 0.3,
+    "p_missing_metadata_ratio": 0.2
+  }
+}

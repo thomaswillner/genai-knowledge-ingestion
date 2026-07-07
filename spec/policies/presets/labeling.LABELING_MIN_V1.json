@@ -1,0 +1,108 @@
+{
+  "id": "LABELING_MIN_V1",
+  "taxonomy_id": "CAPGEMINI_CYBERSEC_MIN_V1",
+  "taxonomy_version": "1.0",
+  "labels_required": true,
+  "label_types": [
+    "domain_tags",
+    "artifact_type"
+  ],
+  "label_confidence_threshold": 0.5,
+  "confidence_mode": "rule_binary",
+  "no_match_action": "empty_labels",
+  "manual_label_override_enabled": true,
+  "persist_fields": [
+    "labels",
+    "label_confidence",
+    "taxonomy_version",
+    "labeling_policy_fingerprint"
+  ],
+  "rules": {
+    "artifact_type": [
+      {
+        "match_any": [
+          "runbook",
+          "sop",
+          "standard operating procedure",
+          "procedure"
+        ],
+        "label": "runbook"
+      },
+      {
+        "match_any": [
+          "architecture",
+          "hld",
+          "lld",
+          "diagram"
+        ],
+        "label": "architecture"
+      },
+      {
+        "match_any": [
+          "code",
+          "script",
+          "pseudocode",
+          "yaml",
+          "terraform",
+          "bicep"
+        ],
+        "label": "code"
+      },
+      {
+        "match_any": [
+          "policy",
+          "control",
+          "cis",
+          "iso 27001",
+          "dora"
+        ],
+        "label": "control"
+      }
+    ],
+    "domain_tags": [
+      {
+        "match_any": [
+          "iam",
+          "identity",
+          "entra",
+          "active directory",
+          "sailpoint",
+          "saviynt"
+        ],
+        "label": "IAM"
+      },
+      {
+        "match_any": [
+          "pam",
+          "cyberark",
+          "privileged"
+        ],
+        "label": "PAM"
+      },
+      {
+        "match_any": [
+          "zero trust",
+          "zscaler"
+        ],
+        "label": "ZeroTrust"
+      },
+      {
+        "match_any": [
+          "siem",
+          "sentinel",
+          "splunk"
+        ],
+        "label": "SIEM"
+      },
+      {
+        "match_any": [
+          "cloud security",
+          "azure security",
+          "aws security",
+          "gcp security"
+        ],
+        "label": "CloudSec"
+      }
+    ]
+  }
+}

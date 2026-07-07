@@ -1,0 +1,13 @@
+{
+  "id": "EU_GDPR_MIN_BASELINE",
+  "raw_artifacts_retention_seconds": 0,
+  "retention_exception_legal_basis_record_id": null,
+  "sanitized_store_retention_days": 180,
+  "audit_retention_days": 365,
+  "job_state_retention_days": 30,
+  "config_retention_days": 365,
+  "catalog_retention_days": 365,
+  "quality_reports_retention_days": 365,
+  "transient_raw_identifier_retention_seconds": 3600,
+  "restricted_audit_retention_days": 30
+}

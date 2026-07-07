@@ -1,0 +1,31 @@
+{
+  "id": "EU_GDPR_MIN_BASELINE",
+  "primary_detector": {
+    "engine_id": "presidio_http",
+    "ruleset_id": "PRESIDIO_EU_PII_V1",
+    "thresholds": {
+      "block": 1
+    }
+  },
+  "secondary_detector": {
+    "engine_id": "gitleaks_cli",
+    "ruleset_id": "GITLEAKS_SECRETS_V1",
+    "thresholds": {
+      "block": 1
+    }
+  },
+  "enforcement": {
+    "pre_persist_scan_required": true,
+    "derived_fields_scan_required": true,
+    "post_export_scan_required": true,
+    "fail_closed": true
+  },
+  "scan_reporting": {
+    "store_only_summary": true,
+    "scan_report_destination": null
+  },
+  "sensitivity_block_actions": {
+    "block_persist_on_unremediated": true,
+    "block_publish_on_post_export_findings": true
+  }
+}

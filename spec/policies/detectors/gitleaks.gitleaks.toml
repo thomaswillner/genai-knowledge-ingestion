@@ -1,0 +1,3 @@
+title = "GKI Secrets Baseline (extends gitleaks default)"
+[extend]
+useDefault = true

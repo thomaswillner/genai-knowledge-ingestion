@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "openaiDeveloperDocs": {
+      "type": "http",
+      "url": "https://developers.openai.com/mcp"
+    },
+    "gkiDevTools": {
+      "command": "python",
+      "args": [
+        "-m",
+        "gki_dev_tools.mcp_server"
+      ],
+      "env": {
+        "GKI_PROJECT_ROOT": ".",
+        "GKI_STATE_DIR": ".gki/state",
+        "GKI_LEDGER_DIR": ".gki/ledgers",
+        "GKI_LOG_DIR": ".gki/logs",
+        "GKI_TIKA_URL": "http://127.0.0.1:9998"
+      }
+    }
+  }
+}

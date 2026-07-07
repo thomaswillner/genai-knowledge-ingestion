@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:gki:schema:manifest:v1",
+  "title": "GKI Document Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "doc_id",
+    "dataset_id",
+    "dataset_version",
+    "index_version",
+    "source_id",
+    "source_object_ref_hash",
+    "object_version",
+    "counts",
+    "hashes",
+    "acl_ref",
+    "scope_policy_fingerprint",
+    "labeling_policy_fingerprint",
+    "data_quality_policy_fingerprint",
+    "chunking_policy_fingerprint",
+    "catalog_entry_ref",
+    "quality_report_ref",
+    "run_stamps",
+    "primary_detector_ruleset_id",
+    "primary_detector_config_hash",
+    "secondary_detector_ruleset_id",
+    "secondary_detector_config_hash",
+    "scan_summaries",
+    "deletion_proofs_summary",
+    "extensions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "doc_id": {
+      "type": "string"
+    },
+    "dataset_id": {
+      "type": "string"
+    },
+    "dataset_version": {
+      "type": "string"
+    },
+    "index_version": {
+      "type": "string"
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "source_object_ref_hash": {
+      "type": "string"
+    },
+    "object_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "acl_ref": {
+      "type": "string"
+    },
+    "scope_policy_fingerprint": {
+      "type": "string"
+    },
+    "labeling_policy_fingerprint": {
+      "type": "string"
+    },
+    "data_quality_policy_fingerprint": {
+      "type": "string"
+    },
+    "chunking_policy_fingerprint": {
+      "type": "string"
+    },
+    "catalog_entry_ref": {
+      "type": "string"
+    },
+    "quality_report_ref": {
+      "type": "string"
+    },
+    "run_stamps": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "run_id",
+        "extraction_timestamp_utc",
+        "config_version",
+        "config_hash"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string"
+        },
+        "extraction_timestamp_utc": {
+          "type": "string"
+        },
+        "config_version": {
+          "type": "string"
+        },
+        "config_hash": {
+          "type": "string"
+        }
+      }
+    },
+    "primary_detector_ruleset_id": {
+      "type": "string"
+    },
+    "primary_detector_config_hash": {
+      "type": "string"
+    },
+    "secondary_detector_ruleset_id": {
+      "type": "string"
+    },
+    "secondary_detector_config_hash": {
+      "type": "string"
+    },
+    "scan_summaries": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "deletion_proofs_summary": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

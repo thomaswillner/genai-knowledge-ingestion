@@ -1,0 +1,11 @@
+{
+  "pack_version": "v21",
+  "canonical_spec_version": "v1.0.2",
+  "built_from": "v19",
+  "generated_utc": "2026-02-21T11:48:44Z",
+  "built_from_chain": [
+    "v18",
+    "v19",
+    "v20"
+  ]
+}

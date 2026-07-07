@@ -1,0 +1,18 @@
+TITLE: IAM Runbook - Synthetic Fixture (NO REAL DATA)
+
+Purpose
+- Synthetic-only test input for PII + secrets gating.
+
+Contacts (synthetic)
+- Email: alice.example@company.test
+- Phone: +49 151 23456789
+- IBAN: DE44500105175407324931
+
+Secrets (synthetic)
+- AWS Access Key: AKIAIOSFODNN7EXAMPLE
+- AWS Secret Key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+Technical content
+- Configure Entra Conditional Access policies for privileged roles.
+- Configure CyberArk PSM connection components.
+- Validate Zscaler ZPA connector health.

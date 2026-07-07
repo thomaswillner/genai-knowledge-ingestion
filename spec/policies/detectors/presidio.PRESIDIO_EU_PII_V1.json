@@ -1,0 +1,23 @@
+{
+  "id": "PRESIDIO_EU_PII_V1",
+  "engine_id": "presidio_http",
+  "analyzer_service_url": null,
+  "anonymizer_service_url": null,
+  "languages": [
+    "en",
+    "de",
+    "nl"
+  ],
+  "entities_allowlist": [
+    "PERSON",
+    "PHONE_NUMBER",
+    "EMAIL_ADDRESS",
+    "CREDIT_CARD",
+    "IBAN_CODE",
+    "LOCATION",
+    "IP_ADDRESS",
+    "DATE_TIME",
+    "URL"
+  ],
+  "request_timeout_ms": 5000
+}

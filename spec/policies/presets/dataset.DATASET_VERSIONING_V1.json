@@ -1,0 +1,7 @@
+{
+  "id": "DATASET_VERSIONING_V1",
+  "dataset_id_strategy": "deterministic_from_config_hash_and_time_window",
+  "dataset_version_strategy": "timestamped_semver",
+  "index_versioning_required": true,
+  "rollback_supported": true
+}

@@ -1,0 +1,9 @@
+{
+  "id": "CATALOG_MIN_V1",
+  "catalog_enabled": true,
+  "catalog_schema_version": "1.0",
+  "catalog_entry_required_per_document": true,
+  "lineage_required": true,
+  "catalog_write_mode": "append_only",
+  "catalog_hash_required": true
+}

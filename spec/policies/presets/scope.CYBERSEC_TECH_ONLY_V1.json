@@ -1,0 +1,96 @@
+{
+  "id": "CYBERSEC_TECH_ONLY_V1",
+  "scope_statement": "technical cybersecurity content only",
+  "allowlist_taxonomy": [
+    "architecture",
+    "code",
+    "configuration",
+    "engineering_standards",
+    "runbook",
+    "process_sop",
+    "control_implementation",
+    "threat_model",
+    "incident_response_playbook",
+    "delivery_pattern"
+  ],
+  "denylist_taxonomy": [
+    "marketing",
+    "sales",
+    "hr",
+    "legal",
+    "finance",
+    "personal",
+    "nontechnical_comms"
+  ],
+  "scope_confidence_threshold": 0.8,
+  "scope_policy_fingerprint_required": true,
+  "classifier_v1": {
+    "section_weighting": {
+      "title": 5,
+      "headings": 3,
+      "body": 1
+    },
+    "allow_threshold": 3,
+    "deny_threshold": 3,
+    "allow_margin": 2,
+    "confidence_divisor": 10,
+    "allow_terms": {
+      "runbook": [
+        "runbook",
+        "sop",
+        "standard operating procedure",
+        "procedure",
+        "operational"
+      ],
+      "architecture": [
+        "architecture",
+        "hld",
+        "lld",
+        "design",
+        "reference architecture",
+        "diagram"
+      ],
+      "code": [
+        "code",
+        "script",
+        "yaml",
+        "terraform",
+        "bicep",
+        "pseudocode"
+      ],
+      "control_implementation": [
+        "control",
+        "implementation",
+        "cis",
+        "iso 27001",
+        "dora",
+        "evidence"
+      ]
+    },
+    "deny_terms": {
+      "marketing": [
+        "marketing",
+        "brochure",
+        "pricing",
+        "sales",
+        "campaign"
+      ],
+      "hr": [
+        "job",
+        "candidate",
+        "interview",
+        "employee"
+      ],
+      "legal": [
+        "terms and conditions",
+        "legal notice",
+        "privacy policy"
+      ],
+      "personal": [
+        "birthday",
+        "home address",
+        "personal"
+      ]
+    }
+  }
+}
