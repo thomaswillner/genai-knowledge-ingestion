@@ -43,3 +43,9 @@ Docs:
 
 Pack version: v21
 Canonical spec: spec/genai-knowledge-ingestion.meta-prompt.txt (v1.0.2)
+
+---
+
+## License
+
+Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE.md) — personal and noncommercial use only. Commercial use is not permitted.

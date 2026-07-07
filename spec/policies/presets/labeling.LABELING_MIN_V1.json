@@ -1,6 +1,6 @@
 {
   "id": "LABELING_MIN_V1",
-  "taxonomy_id": "CAPGEMINI_CYBERSEC_MIN_V1",
+  "taxonomy_id": "CYBERSEC_MIN_V1",
   "taxonomy_version": "1.0",
   "labels_required": true,
   "label_types": [
