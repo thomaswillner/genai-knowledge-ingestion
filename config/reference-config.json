@@ -1,0 +1,15 @@
+{
+  "_comment": "Reference-profile config: every required key filled so the pipeline runs with zero infrastructure. Contrast with starter-config.json, where nulls deliberately BLOCK until you make explicit decisions. See docs/PROFILES.md.",
+  "config_version": "reference-1",
+  "dataset_id": "gki-reference-dataset",
+  "dataset_version": "1.0.0",
+  "index_version": "1",
+  "source_id": "local-manual-import",
+  "acl_ref": "acl://reference/local-single-user",
+  "index_destination": "reference://not-indexed",
+  "output_dir": "reference-output",
+  "scope_policy": "spec/policies/presets/scope.CYBERSEC_TECH_ONLY_V1.json",
+  "labeling_policy": "spec/policies/presets/labeling.LABELING_MIN_V2.json",
+  "quality_policy": "spec/policies/presets/quality.QUALITY_MIN_V1.json",
+  "chunking_policy": "spec/policies/presets/chunking.CHUNKING_BASELINE_V1.json"
+}
