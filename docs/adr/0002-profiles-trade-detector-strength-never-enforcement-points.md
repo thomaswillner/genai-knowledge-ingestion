@@ -1,0 +1,5 @@
+# Deployment profiles trade detector strength, never enforcement points
+
+The pipeline ships three profiles (reference / standard / enterprise) that share identical schemas, gates, and reason codes; only detector and connector implementations change (`docs/PROFILES.md`). The alternative — a Presidio/Gitleaks stub in the reference profile that always returns "clean" — was rejected because it would make the reference profile a lie; instead the reference profile runs real regex detectors under their own ruleset IDs (`REFERENCE_EU_PII_V1`, `REFERENCE_SECRETS_V1`), honestly weaker but demonstrably catching the planted fixtures (`docs/ARCHITECTURE.md`, Design decisions).
+
+Consequence: a profile may strengthen a detector but may never remove an enforcement point — all three Sensitive Passes run in every profile, and the conformance fixtures are profile-independent. A reference-profile detector is not a placeholder awaiting deletion; replacing it with a stub or skipping a pass breaks the "same failure codes everywhere" contract the profiles exist to preserve.
