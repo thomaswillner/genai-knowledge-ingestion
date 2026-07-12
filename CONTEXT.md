@@ -17,7 +17,7 @@ A deployment tier (reference, standard, enterprise) that swaps detector and conn
 _Avoid_: tier, edition, mode
 
 **Gate**:
-A fail-closed enforcement point in the pipeline; it either passes or halts with a Reason Code — there is no partial or silent success.
+A fail-closed enforcement point in the pipeline that either passes or halts with a Reason Code.
 _Avoid_: check, validation step, filter
 
 **Reason Code**:
@@ -37,11 +37,11 @@ A sensitive-data engine (PII or secrets) with a versioned ruleset whose configur
 _Avoid_: scanner, filter
 
 **Sensitive Pass**:
-One of the three mandatory sensitive-data enforcement points (pre-persist, derived-fields, post-export); an unremediated finding at any pass blocks the run.
+One of the three mandatory sensitive-data enforcement points (pre-persist, derived-fields, post-export).
 _Avoid_: PII scan, redaction step
 
 **Chunk Record**:
-The atomic published artifact: one strictly schema-valid record per chunk, carrying content, provenance, Policy Fingerprints, and gate outcomes so consumers never re-derive them.
+The atomic published artifact: one strictly schema-valid record per chunk, carrying content, provenance, Policy Fingerprints, and gate outcomes.
 _Avoid_: chunk metadata, embedding record, JSONL row
 
 **Manifest**:
@@ -53,7 +53,7 @@ An explicit, greppable value carried by a required field that does not apply in 
 _Avoid_: placeholder, default value, N/A
 
 **Deletion Proof**:
-The auditable object attesting that a document's raw artifacts were destroyed; its reference exists in published outputs before serialization, the proof object itself only after deletion executes.
+The auditable object attesting that a document's raw artifacts were destroyed.
 _Avoid_: deletion log, cleanup record
 
 **Ledger**:
@@ -61,5 +61,5 @@ An append-only record of run outcomes — a success ledger for published objects
 _Avoid_: log, run history
 
 **Conformance Suite**:
-The set of fixture-driven tests that prove an implementation matches the Canonical Specification's normative algorithms; passing it is a condition of DONE, and its absence is itself a blocking failure.
+The set of fixture-driven tests that prove an implementation matches the Canonical Specification's normative algorithms.
 _Avoid_: unit tests, regression tests, test coverage
